@@ -11,7 +11,7 @@ var callback_dict = {
 }
 
 module.exports.loop = function () {
-    qm.satisfy_quota('harvester', 10, [WORK, MOVE, CARRY])
+    qm.satisfy_quota('harvester', 11, [WORK, MOVE, CARRY])
     qm.satisfy_quota('upgrader', 5, [WORK, MOVE, CARRY])
     qm.satisfy_quota('builder', 1, [WORK, MOVE, CARRY])
     
