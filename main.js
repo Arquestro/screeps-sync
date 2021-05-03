@@ -10,11 +10,13 @@ var callback_dict = {
     'upgrader': roleUpgrader.run,
 }
 
-module.exports.loop = function () {
-    qm.satisfy_quota('harvester', 10, [WORK, MOVE, CARRY])
-    qm.satisfy_quota('upgrader', 5, [WORK, MOVE, CARRY])
-    qm.satisfy_quota('builder', 1, [WORK, MOVE, CARRY])
-    
+if (Game.spawns['Spawn1'].room.controller.level == 1) {
+    module.exports.loop = loopRCL1;
+} else {
+    module.exports.loop = loopRCLGT1;
+}
+
+function commonRoutine () {
     var tower = Game.getObjectById('e2f2dfd8dd2e8d247e66bdbd');
     if(tower) {
         var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
@@ -39,4 +41,31 @@ module.exports.loop = function () {
             delete Memory.creeps[i];
         }
     }
+}
+
+function loopRCL1 () {
+    var creep_quota_prioritized_list = [
+        {'quota_role': 'upgrader', 'quota_limit': 2, 'body': [WORK, WORK, MOVE, CARRY]},
+    ];
+    qm.satisfy_prioritized_quota(creep_quota_prioritized_list);
+    commonRoutine();
+}
+
+
+function buildAtMainSpawn(offset_x, offset_y, structure_type) {
+    Game.spawns['Spawn1'].room.createConstructionSite(Game.spawns['Spawn1'].pos.x + offset_x, Game.spawns['Spawn1'].pos.y + offset_y, structure_type);
+}
+
+function loopRCLGT1 () {
+    var creep_quota_prioritized_list = [
+        {'quota_role': 'harvester', 'quota_limit': 5, 'body': [WORK, WORK, MOVE, CARRY]},
+        {'quota_role': 'upgrader', 'quota_limit': 2, 'body': [WORK, WORK, MOVE, CARRY]},
+        {'quota_role': 'builder', 'quota_limit': 5, 'body': [WORK, WORK, MOVE, CARRY]}
+    ];
+    qm.satisfy_prioritized_quota(creep_quota_prioritized_list);
+    var pts = [[2, 1], [1, 2], [0, 2], [-1, 2], [-2, 2]];
+    for(let i = 0; i < pts.length; ++i) {
+        buildAtMainSpawn(pts[i][0], pts[i][1], STRUCTURE_EXTENSION);
+    }
+    commonRoutine();
 }
